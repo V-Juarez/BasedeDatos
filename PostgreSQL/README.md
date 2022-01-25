@@ -259,33 +259,623 @@ sudo -u postgres psql
 
 
 
+## Docker-compose ingresar a nuestra base de datos Postgresql
+
+ingresar al bash de docker-compose
+
+```sh
+docker-compose exec postgres bash
+```
+
+Ingresar a postgresql
+
+```sh
+psql -h localhost -d my_postgres -U victor
+```
+
 [PostgreSQL, Instalación en Linux (Ubuntu y distros similares)](https://www.youtube.com/watch?v=40uGNsi7ysc)
 
 
 
 ## PgAdmin: Interacción con Postgres desde la Interfaz Gráfica
 
+> Postgres es el mejor motor de base de datos.
+
+> La interfaz de PgAdmin nos permite ver de manera grafica muchísima información referente a nuestras bases de datos, acá veremos un breve resumen de las diferentes opciones que nos ofrece.
+
+> En Servers, si le damos clic derecho, podemos crear nuestra propia consulta de base de datos al servidor, pero con opciones nuevas propias de la interfaz grafica como definir un color de resaltado con el cual identificar nuestra consulta, y darle un nombre a nuestra conexión para identificarla. Ademas podemos al igual que con el Shell definir todas las opciones de conexión como el host, puerto, nombre de usuario, password, etc.
+
+> La conexión en PgAdmin nos permite verla de manera grafica en forma de árbol donde tenemos en el primer nivel; las bases de datos, los usuarios que se pueden conectar a las mismas y los Tablespaces que son espacios físicos donde guardar nuestros datos.
+
+> En la base de datos tenemos ademas un segundo nivel donde podemos ver todas las opciones que tiene nuestra base de datos y que en el shell tendríamos que visualizar y acceder a través de comandos:
+
+> • Casts: Que es para hacer traducción de tipos de datos explicito.
+> • Catalogs: Para catalogar la información, como una especie de subdirectorio de tablas.
+> • Event Triggers: En un apartado donde podremos ejecutar funciones en base a acciones que pasan en la base de datos.
+> • Extension: Nos servirá para instalar módulos desarrollados por terceros para nuestra base de datos.
+> • Foreign Data Wrappers: Es acceso a base de datos remoto.
+> • Languages: Hace referencia a los lenguajes de programación que puedes usar dentro de la base de datos.
+> • Schemas: Nos permite ver la información propia de las tablas de nuestra base de datos.
+
+> Ademas PgAdmin nos permite ver en tiempo real informacion de lo que sucede con nuestra base de datos, al hacer clic en “Databases” nos mostrara en el panel a la derecha una ventana con distintas pestañas:
+
+> • Dashboard: Nos muestra las conexiones simultaneas, las transacciones, lo que esta escribiendo, lo que esta leyendo, lo que esta borrando. En la parte inferior en “server activity” podemos ver las funciones que se estan ejecutando para la base de datos que estamos visualizando.
+> • Properties: Nos muestra las propiedades de nuestra DB, como los tipos de datos, el dueño de la base de datos.
+> • Statistics: Nos mostrara datos estadísticos de nuestra DB.
+> • Dependencies: Nos enseña las dependencias que tenga nuestra base de datos.
+
+> Igualmente podemos ejecutar consultas SQL en PgAdmin, posicionandonos en la base de datos donde queremos realizarlas y seleccionando en la opción del menú superior Tools, Query Tool.
+
+[How to Install pgAdmin 4 on Ubuntu 20.04 | 18.04](https://computingforgeeks.com/how-to-install-pgadmin-4-on-ubuntu/)
+
+[![img](https://www.google.com/s2/favicons?domain=https://www.pgadmin.org//static/img/favicon.ico)pgAdmin - PostgreSQL Tools](https://www.pgadmin.org/)
+
 ## Archivos de Configuración
+
+Archivos de configuración.
+
+A través de la sentencia
+
+```sql
+show config_file;
+```
+
+ se nos muestra donde están los archivos de configuración. En mi caso la ruta es:
+
+```sh
+Library/PostgreSQL/12/data/postgresql.conf
+```
+
+Algo a tener en cuenta es que en la ruta por default de instalación no se puede acceder debido a falta de permisos. Para ingresar basta con un:
+
+```sh
+sudo cd /Library/PostgreSQL/12/data/
+```
+
+**Postgresql.conf**: Configuración general de postgres, múltiples opciones referentes a direcciones de conexión de entrada, memoria, cantidad de hilos de pocesamiento, replica, etc.
+
+**pg_hba.conf**: Muestra los roles así como los tipos de acceso a la base de datos.
+
+**pg_ident.conf**: Permite realizar el mapeo de usuarios. Permite definir roles a usuarios del sistema operativo donde se ejecuta postgres.
+
+___
+
+Archivos Configuracion
+`- postgresql.conf`
+`- pg_hba.conf`
+`- pg_ident.conf`
+
+Muestra la ruta de nuestros archivos de configuracion
+**`SHOW config_file;`**
+
+`- postgresql.conf:` Configuración general de postgres, múltiples opciones referentes a direcciones de conexión de entrada, memoria, cantidad de hilos de pocesamiento, replica, etc.
+
+`- pg_hba.conf:` Muestra los roles así como los tipos de acceso a la base de datos.
+
+`- pg_ident.conf:` Permite realizar el mapeo de usuarios. Permite definir roles a usuarios del sistema operativo donde se ejecuta postgres.
+
+```sql
+# Query Editor | button
+# find de file's
+SHOW config_file;
+```
+
+[![img](https://www.google.com/s2/favicons?domain=//static.platzi.com/media/favicons/platzi_favicon.png)Domina la Administración de Usuarios y Permisos en Servidores Linux](https://platzi.com/blog/administracion-usuarios-servidores-linux/)
 
 ## Comandos más utilizados en PostgreSQL
 
+**La Consola**
+
+La consola en PostgreSQL es una herramienta muy potente para crear, administrar y depurar nuestra base de datos. podemos acceder a ella después de instalar PostgreSQL y haber seleccionado la opción de instalar la consola junto a la base de datos.
+
+PostgreSQL está más estrechamente acoplado al entorno UNIX que algunos otros sistemas de bases de datos, utiliza las cuentas de usuario nativas para determinar quién se conecta a ella (de forma predeterminada). El programa que se ejecuta en la consola y que permite ejecutar consultas y comandos se llama psql, psql es la terminal interactiva para trabajar con PostgreSQL, es la interfaz de línea de comando o consola principal, así como PgAdmin es la interfaz gráfica de usuario principal de PostgreSQL.
+
+Después de emitir un comando PostgreSQL, recibirás comentarios del servidor indicándote el resultado de un comando o mostrándote los resultados de una solicitud de información. Por ejemplo, si deseas saber qué versión de PostgreSQL estás usando actualmente, puedes hacer lo siguiente:
+
+![1.png](https://static.platzi.com/media/user_upload/1-3db23704-3297-40cf-b3fc-27ec761a2579.jpg)
+
+***Comandos de ayuda\***
+
+En consola los dos principales comandos con los que podemos revisar el todos los comandos y consultas son:
+
+- **`\?`** Con el cual podemos ver la lista de todos los comandos disponibles en consola, comandos que empiezan con backslash ( \ )
+
+![2.png](https://static.platzi.com/media/user_upload/2-f3fd936e-bdb2-4583-afce-1899ca222a77.jpg)
+
+- **`\h`** Con este comando veremos la información de todas las consultas SQL disponibles en consola. Sirve también para buscar ayuda sobre una consulta específica, para buscar información sobre una consulta específica basta con escribir **`\h`** seguido del inicio de la consulta de la que se requiera ayuda, así: **`\h ALTER`**
+
+De esta forma podemos ver toda la ayuda con respecto a la consulta ***ALTER\***
+
+![3.png](https://static.platzi.com/media/user_upload/3-ee850ea6-271e-4826-9d8f-aa054dddc3fc.jpg)
+
+***Comandos de navegación y consulta de información\***
+
+- **`\c`** Saltar entre bases de datos
+- **`\l`** Listar base de datos disponibles
+- **`\dt`** Listar las tablas de la base de datos
+- **`\d <nombre_tabla>`** Describir una tabla
+- **`\dn`** Listar los esquemas de la base de datos actual
+- **`\df`** Listar las funciones disponibles de la base de datos actual
+- **`\dv`** Listar las vistas de la base de datos actual
+- **`\du`** Listar los usuarios y sus roles de la base de datos actual
+
+***Comandos de inspección y ejecución\***
+
+- **`\g`** Volver a ejecutar el comando ejecutando justo antes
+- **`\s`** Ver el historial de comandos ejecutados
+- **`\s <nombre_archivo>`** Si se quiere guardar la lista de comandos ejecutados en un archivo de texto plano
+- **`\i <nombre_archivo>`** Ejecutar los comandos desde un archivo
+- **`\e`** Permite abrir un editor de texto plano, escribir comandos y ejecutar en lote. **\e** abre el editor de texto, escribir allí todos los comandos, luego guardar los cambios y cerrar, al cerrar se ejecutarán todos los comandos guardados.
+- **`\ef`** Equivalente al comando anterior pero permite editar también funciones en PostgreSQL
+
+***Comandos para debug y optimización\***
+
+- **`\timing`** Activar / Desactivar el contador de tiempo por consulta
+
+***Comandos para cerrar la consola\***
+
+- **`\q`** Cerrar la consola
+
+***Ejecutando consultas en la base de datos usando la consola\***
+
+De manera predeterminada PostgreSQL no crea bases de datos para usar, debemos crear nuestra base de datos para empezar a trabajar, verás que existe ya una base de datos llamada ***postgres\*** pero no debe ser usada ya que hace parte del CORE de PostgreSQL y sirve para gestionar las demás bases de datos.
+
+Para crear una base de datos debes ejecutar la consulta de creación de base de datos, es importante entender que existe una costumbre no oficial al momento de escribir consultas; consiste en poner en mayúsculas todas las palabras propias del lenguaje SQL cómo ***CREATE, SELECT, ALTE\***, etc y el resto de palabras como los nombres de las tablas, columnas, nombres de usuarios, etc en minúscula. No está claro el porqué de esta especie de “estándar” al escribir consultas SQL pero todo apunta a que en el momento que SQL nace, no existían editores de consultas que resaltaran las palabras propias del lenguaje para diferenciar fácilmente de las palabras que no son parte del lenguaje, por eso el uso de mayúsculas y minúsculas.
+
+Las palabras reservadas de consultas SQL usualmente se escriben en mayúscula, ésto para distinguir entre nombres de objetos y lenguaje SQL propio, no es obligatorio, pero podría serte útil en la creación de Scripts SQL largos.
+
+Vamos ahora por un ligero ejemplo desde la creación de una base de datos, la creación de una tabla, la inserción, borrado, consulta y alteración de datos de la tabla.
+
+Primero crea la base de datos, “**CREATE DATABASE transporte**;” sería el primer paso.
+
+![4.png](https://static.platzi.com/media/user_upload/4-669e8520-bb3d-47f5-9002-a3f5fcaf9191.jpg)
+
+Ahora saltar de la base de datos ***postgres\*** que ha sido seleccionada de manera predeterminada a la base de datos transporte recién creada utilizando el comando **`\c transporte`**.
+
+![5.png](https://static.platzi.com/media/user_upload/5-7d6dd8c4-a03b-48b7-b077-4cb589f55ee2.jpg)
+
+Ahora vamos a crear la tabla tren, el SQL correspondiente sería:
+
+```
+CREATE TABLE tren ( id serial NOT NULL, modelo character varying, capacidad integer, CONSTRAINT tren_pkey PRIMARY KEY (id) );
+```
+
+La columna id será un número autoincremental (cada vez que se inserta un registro se aumenta en uno), modelo se refiere a una referencia al tren, capacidad sería la cantidad de pasajeros que puede transportar y al final agregamos la llave primaria que será id.
+
+![6.png](https://static.platzi.com/media/user_upload/6-444c767c-7f5b-4410-ac3a-df6c23d4552a.jpg)
+
+Ahora que la tabla ha sido creada, podemos ver su definición utilizando el comando **`\d tren`**
+
+![7.png](https://static.platzi.com/media/user_upload/7-93ef9744-1514-4d83-bf0b-b13462b639ca.jpg)
+
+PostgreSQL ha creado el campo id automáticamente cómo integer con una asociación predeterminada a una secuencia llamada ‘tren_id_seq’. De manera que cada vez que se inserte un valor, id tomará el siguiente valor de la secuencia, vamos a ver la definición de la secuencia. Para ello, **`\d tren_id_seq`** es suficiente:
+
+![8.png](https://static.platzi.com/media/user_upload/8-6f223092-0ee7-49db-8979-b251f1d5f56a.jpg)
+
+Vemos que la secuencia inicia en uno, así que nuestra primera inserción de datos dejará a la columna id con valor uno.
+
+**`INSERT INTO tren( modelo, capacidad ) VALUES (‘Volvo 1’, 100);`**
+
+![9.png](https://static.platzi.com/media/user_upload/9-86a5c14f-d2ef-45eb-b835-abbb32f0d34b.jpg)
+
+Consultamos ahora los datos en la tabla:
+
+**`SELECT \* FROM tren;`**
+
+![10.png](https://static.platzi.com/media/user_upload/10-2c25adb4-615f-4691-973f-c0a231c33d60.jpg)
+
+Vamos a modificar el valor, establecer el tren con id uno que sea modelo Honda 0726. Para ello ejecutamos la consulta tipo **`UPDATE tren SET modelo = 'Honda 0726' Where id = 1;`**
+
+![11.png](https://static.platzi.com/media/user_upload/11-b1d3b646-6ca6-4ae0-9005-ed002c21ef32.jpg)
+
+Verificamos la modificación **`SELECT \* FROM tren;`**
+
+![12.png](https://static.platzi.com/media/user_upload/12-370abb43-290b-43bd-a1c2-609c42b85767.jpg)
+
+Ahora borramos la fila: **`DELETE FROM tren WHERE id = 1;`**
+
+![13.png](https://static.platzi.com/media/user_upload/13-4224641d-e97f-4e01-8784-19b2a9d39386.jpg)
+
+Verificamos el borrado **`SELECT \* FROM tren;`**
+
+![14.png](https://static.platzi.com/media/user_upload/14-9a75b2b9-587b-476a-88b1-15c6164104c8.jpg)
+
+El borrado ha funcionado tenemos 0 rows, es decir, no hay filas. Ahora activemos la herramienta que nos permite medir el tiempo que tarda una consulta **`\timing`**
+
+![15.png](https://static.platzi.com/media/user_upload/15-ccffbd2f-fd1a-4fa2-ae31-43313bc5a82b.jpg)
+
+Probemos cómo funciona al medición realizando la encriptación de un texto cualquiera usando el algoritmo md5:
+
+![16.png](https://static.platzi.com/media/user_upload/16-0699feec-184c-4aa3-8b9a-2a03e1326238.jpg)
+
+La consulta tardó 10.011 milisegundos
+
+![Captura de Pantalla 2021-01-14 a la(s) 22.46.34.png](https://static.platzi.com/media/user_upload/Captura%20de%20Pantalla%202021-01-14%20a%20la%28s%29%2022.46.34-cb8e2c20-3649-4a6e-8ad5-3fb42a33424f.jpg)
+
 ## Presentación del Proyecto
+
+Aquí el modelo entidad-relación para solucionar el reto.
+
+![img](https://i.ibb.co/hg45VxP/Soluci-n-reto1.jpg)
+
+> Puedes echarle un vistazo a **sqlalchemy** si usas `python`, también hay una librería llamada **pymongo** para Mongo. En lo personal, he usado lo que mencionas para dos cosas:
+>
+> 1. Crear tablas desde un framework con ayuda del ORM, por ejemplo, Django.
+> 2. Hacer conexiones para utilizar los datos que están dentro de ellas y generar pues alguna relación matemática o algo así.
+
+**Proyecto: Sistema de transporte por Tren**
+
+**Instancias**:
+
+- Pasajero
+- Trayecto
+- Estación
+- Tren
+- Viaje
+
+**Agrego un esquema de las instancias y algunos atributos posibles para utilizar en este proyecto.**
+
+![DER_Sistema_trenes_Postgres1.png](https://static.platzi.com/media/user_upload/DER_Sistema_trenes_Postgres1-10093577-91c0-4841-af56-cfe4fc5b340f.jpg)
+
+> El pasajero podría modelarse como:
+>
+> **pasajero**(numero de tarjeta de acceso, estacion de entrada, hora de entrada)
 
 ## Tipos de datos
 
+Tipos de datos
+
+Principales:
+Numéricos(Numeros enteros, Numeros Decimales, Seriales)
+Monetarios(cantidad de moneda)
+Texto(almacenar cadenas y texto, existen tres VARCHAR, CHAR, TEXT)
+Binario(1 Y 0)
+Fecha/Hora(Para almacenar Fechas y/o Horas, DATE TYPE, TIME TYPE, TIMESTAMP, INTERVAL)
+Boolean(Verdadero o Falso)
+Especiales propios de postgres
+Geométricos: Permiten calcular distancias y áreas usando dos valores X y Y.
+Direcciones de Red: Cálculos de máscara de red
+Texto tipo bit: Cálculos en otros sistemas, ejm(hexadecimal, binario)
+XML, JSON: Postgres no permite guardar en estos formatos
+Arreglos: Vectores y Matrices
+
+Principales:
+
+- Numéricos
+- Monetarios
+- texto
+- Binarios
+- Fecha / Hora
+- Boolean
+
+Especiales:
+
+- Geométricos
+- Dirección de Red
+- Texto tipo bit
+- XML, JSON
+- Arreglos
+
+[![img](https://www.google.com/s2/favicons?domain=https://todopostgresql.com/wp-content/uploads/2019/04/cropped-logo_tp_512-32x32.png)PostgreSQL data types, tipos de datos más utilizados - TodoPostgreSQL](https://todopostgresql.com/postgresql-data-types-los-tipos-de-datos-mas-utilizados/)
+
+[![img](https://www.google.com/s2/favicons?domain=https://www.postgresql.org/docs/11/datatype.html/favicon.ico)PostgreSQL: Documentation: 11: Chapter 8. Data Types](https://www.postgresql.org/docs/11/datatype.html)
+
 ## Diseñando nuestra base de datos: estructura de las tablas
 
+Nombre de las Tablas en Plural:
+
+Estaciones
+Trenes
+Usuarios
+
+Etc Etc
+
+![Captura de pantalla 2020-05-25 a la(s) 04.26.56.png](https://static.platzi.com/media/user_upload/Captura%20de%20pantalla%202020-05-25%20a%20la%28s%29%2004.26.56-df5bf572-df44-4bbe-8b36-f0feaf7781e7.jpg)
+
+![Captura.PNG](https://static.platzi.com/media/user_upload/Captura-37dabc12-1db1-4362-9c90-c9e4c65125c0.jpg)
+
+![DISENO_PROYECTO.png](https://static.platzi.com/media/user_upload/DISENO_PROYECTO-18866a37-5be7-476c-b379-ec1289eb8241.jpg)
+
 ## Jerarquía de Bases de Datos
+
+Toda jerarquía de base de datos se basa en los siguientes elementos:
+
+- **Servidor de base de datos:** Computador que tiene un motor de base de datos instalado y en ejecución.
+- **Motor de base de datos:** Software que provee un conjunto de servicios encargados de administrar una base de datos.
+- **Base de datos:** Grupo de datos que pertenecen a un mismo contexto.
+- **Esquemas de base de datos en PostgreSQL:** Grupo de objetos de base de datos que guarda relación entre sí (tablas, funciones, relaciones, secuencias).
+- **Tablas de base de datos:** Estructura que organiza los datos en filas y columnas formando una matriz.
+
+**PostgreSQL es un motor de base de datos.**
+
+La estructura de la base de datos diseñada para el reto corresponde a los siguientes
+elementos:
+
+![1.png](https://static.platzi.com/media/user_upload/1-9a247404-0b98-43d3-bc7e-649e66cad472.jpg)
+
+La base de datos se llama transporte, usaremos su esquema predeterminado public.
+
+El esquema public contiene las siguientes tablas:
+
+- Estación
+- Pasajero
+- Tren
+
+Y las tablas de relaciones entre cada uno de los elementos anteriores son:
+
+- Trayecto
+- Viaje
+
+El esquema relacional entre las tablas corresponde al siguiente diagrama:
+
+![2.png](https://static.platzi.com/media/user_upload/2-3d80d1c7-2ea2-475c-b625-c11c5b76b9aa.jpg)
+
+***Estación\***
+Contiene la información de las estaciones de nuestro sistema, incluye datos de nombre con tipo de dato texto y dirección con tipo de dato texto, junto con un número de identificación único por estación.
+
+***Tren\***
+Almacena la información de los trenes de nuestro sistema, cada tren tiene un modelo con tipo de dato texto y una capacidad con tipo de dato numérico que representa la cantidad de personas que puede llevar ese tren, también tiene un ID único por tren.
+
+***Trayecto\***
+Relaciona los trenes con las estaciones, simula ser las rutas que cada uno de los trenes pueden desarrollar entre las estaciones
+
+***Pasajero\***
+Es la tabla que contiene la información de las personas que viajan en nuestro sistema de transporte masivo, sus columnas son nombre tipo de dato texto con el nombre completo de la persona, direccion_residencia con tipo de dato texto que indica dónde vive la persona, fecha_nacimiento tipo de dato texto y un ID único tipo de dato numérico para identificar a cada persona.
+
+***Viaje\***
+Relaciona Trayecto con Pasajero ilustrando la dinámica entre los viajes que realizan las personas, los cuales parten de una estación y se hacen usando un tren.
 
 # 2. Gestión de la información en bases de datos
 
 ## Creación de Tablas
 
+![1.PNG](https://static.platzi.com/media/user_upload/1-ed1127e6-920f-4ed0-8e31-92476c9cb42d.jpg)
+
+```sql
+-- Si la base de datos existe la elimina
+DROP DATABASE IF EXISTS transporte;
+-- Creamos la base de datos
+CREATE DATABASE transporte
+    WITH
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    CONNECTION LIMIT = -1;
+
+-- Nos movemos a la base de datos creada
+\c transporte
+
+-- Tabla pasajero
+CREATE TABLE public.pasajero(
+    id serial,
+    nombre character varying(100),
+    direccion_residencia character varying,
+    fecha_nacimiento date,
+    CONSTRAINT pasajero_pkey PRIMARY KEY (id)
+) WITH ( OIDS = FALSE );
+AlTER TABLE public.pasajero OWNER to postgres;
+
+-- Insertar un pasajero
+INSERT INTO public.pasajero(nombre, direccion_residencia, fecha_nacimiento)
+VALUES('Primer Pasajero', 'Direccion X', '1996-04-24');
+
+-- Para ver la fecha actual
+SELECT current_date;
+
+--Tabla estacion
+CREATE TABLE public.estacion(
+    id serial,
+    nombre character varying(50),
+    direccion character varying(50),
+    CONSTRAINT estacion_pkey PRIMARY KEY (id)
+) WITH ( OIDS = FALSE );
+ALTER TABLE public.estacion OWNER to postgres;
+
+-- Tabla tren
+CREATE TABLE public.tren (
+    id serial,
+    modelo character varying(50),
+    capacidad integer,
+    CONSTRAINT tren_pkey PRIMARY KEY (id)
+) WITH ( OIDS = FALSE );
+ALTER TABLE public.tren OWNER to postgres;
+
+-- Tabla trayecto
+CREATE TABLE public.trayecto (
+	id serial,
+	nombre charactervarying(50),
+	id_estacion integer,
+	id_tren integer,
+	CONSTRAINT trayecto_pkey PRIMARY KEY (id)
+) WITH ( OIDS = FALSE );
+ALTER TABLE public.trayecto OWNERto postgres;
+
+-- Tabla viaje
+CREATE TABLE public.viaje (
+    id serial,
+    id_pasajero integer,
+    id_trayecto integer,
+    inicio timestamp without time zone,
+    fin timestamp without time zone,
+    CONSTRAINT viaje_pkey PRIMARY KEY (id)
+) WITH ( OIDS = FALSE );
+ALTER TABLE public.viaje OWNER to postgres;
+```
+
 ## Particiones
+
+![Captura2.PNG](https://static.platzi.com/media/user_upload/Captura2-28c2695b-6973-429f-a41e-8998a49ebd2e.jpg)
+
+**Particion de tablas**
+
+```sql
+Particiones
+- Separacion fisica de datos
+- Estructura logica
+
+-- Tabla bitacora_viaje
+CREATE TABLE public.bitacora_viaje(
+    id serial,
+    id_viaje integer,
+    fecha date
+) PARTITION BY RANGE (fecha) WITH (OIDS = FALSE);
+ALTER TABLE public.bitacora_viaje OWNER to postgres;
+
+-- Vamos a crear la particion
+CREATE TABLE bitacora_viaje201001 PARTITION OF public.bitacora_viaje
+FOR VALUES FROM ('2010-01-01') TO  ('2020-04-24');
+
+-- Insertamos un dato --> ERROR antes de crear la particions
+INSERT INTO public.bitacora_viaje(id_viaje, fecha)
+VALUES(1, '2010-01-01');
+
+-- Mostramos los valores de la tabla bitacora_viaje
+SELECT * FROM bitacora_viaje;
+
+-- eliminamos la tabla bitacora_viaje y se eliminara la particion igualmente
+DROP TABLE bitacora_viaje;
+```
+
+**Crear tabla particionada**
+
+```sql
+# Insertar 
+INSERT INTO public.bitacora_viaje(
+	id_viaje, fecha)
+	VALUES (1, '2010-01-10');
+
+# Consultar Tabla
+SELECT * FROM bitacora_viaje;
+
+# Crear Tabla Particionada
+CREATE TABLE bitacora_viaje201001 PARTITION OF bitacora_viaje
+FOR VALUES FROM ('2010-01-01') To ('2010-12-31');
+```
 
 ## Creación de Roles
 
+ROLES
+
+Que puede hacer un ROLE
+
+- Crear y Eliminar
+- Asignar atributos
+- Agrupar con otros roles
+- Roles predeterminados
+
+```sql
+-- Ver las funciones del comando CREATE ROLE (help)
+\h CREATE ROLE;
+
+-- Creamos un ROLE (consultas -> lectura, insertar, actualizar)
+CREATE ROLE usuario_consulta;
+
+-- Mostrar todos los usuarios junto a sus atributos
+\dg
+
+-- Agregamos atributos al usuario o role
+ALTER ROLE  usuario_consulta WITH LOGIN;
+ALTER ROLE  usuario_consulta WITH SUPERUSER;
+ALTER ROLE  usuario_consulta WITH PASSWORD'1234';
+
+-- Elimanos el usuario o role
+DROP ROLE usuario_consulta;
+
+-- La mejor forma de crear un usuario o role por pgadmin
+CREATE ROLE usuario_consulta WITH
+  LOGIN
+  NOSUPERUSER
+  NOCREATEDB
+  NOCREATEROLE
+  INHERIT
+  NOREPLICATION
+  CONNECTION LIMIT -1
+  PASSWORD'1234';
+
+--Para obtorgar privilegios a nuestro usuario_consulta
+GRANT INSERT, SELECT, UPDATE ON TABLE public.estacion TO usuario_consulta;
+GRANT INSERT, SELECT, UPDATE ON TABLE public.pasajero TO usuario_consulta;
+GRANT INSERT, SELECT, UPDATE ON TABLE public.trayecto TO usuario_consulta;
+GRANT INSERT, SELECT, UPDATE ON TABLE public.tren TO usuario_consulta;
+GRANT INSERT, SELECT, UPDATE ON TABLE public.viaje TO usuario_consulta;
+```
+
+>  Usuarios Linux, a nosotros no nos sale la opcion de configurar el inicio de psql con el usuario todo eso se tiene que hacer a través de este comando.
+>
+> ```sh
+> psql -h <host> -d <base de datos> -U <usuario> -p <port>
+> ```
+
 ## Llaves foráneas
+
+Hay que tener bastante cuidado con el borrado y la actualizacion en cascada, esto podria generar cuellos de botella en el rendimento del aplicativo cuando se modifica la llave y borrar informacion puede ser una opcion devastadora para la integridad de la informacion.
+
+```sql
+ALTER TABLE public.trayecto
+    ADD FOREIGN KEY (id_estacion)
+    REFERENCES public.estacion (id) MATCH SIMPLE
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    NOT VALID;
+ALTER TABLE public.trayecto
+    ADD FOREIGN KEY (id_tren)
+    REFERENCES public.tren (id) MATCH SIMPLE
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    NOT VALID;
+```
+
+LLaves Foranes
+
+- Consistencia
+  Estructura
+- Tabla origen
+- Tabla destino
+- Acciones
+
+```sql
+-- Agregamos llave foranea de id_estacion a la tabla trayecto
+ALTER TABLE public.trayecto
+    ADD CONSTRAINT trayecto_estacion_fkey FOREIGN KEY (id_estacion)
+    REFERENCES public.estacion (id) MATCH SIMPLE
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    NOT VALID;
+
+-- Agregamos llave foranea de id_tren a la tabla trayecto
+ALTER TABLE public.trayecto
+    ADD CONSTRAINT trayecto_tren_fkey FOREIGN KEY (id_tren)
+    REFERENCES public.tren (id) MATCH SIMPLE
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    NOT VALID;
+
+-- Agregamos llave foranea de id_trayecto a la tabla viaje
+ALTER TABLE public.viaje
+    ADD CONSTRAINT viaje_trayecto_fkey FOREIGN KEY (id_trayecto)
+    REFERENCES public.trayecto (id) MATCH SIMPLE
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    NOT VALID;
+
+-- Agregamos llave foranea de id_pasajero a la tabla viaje
+ALTER TABLE public.viaje
+    ADD CONSTRAINT viaje_pasajero_fkey FOREIGN KEY (id_pasajero)
+    REFERENCES public.pasajero (id) MATCH SIMPLE
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    NOT VALID;
+
+-- Para borrar una llave foranea por si tienes algun error
+ALTER TABLE public.viaje DROP CONSTRAINT viaje_trayecto_fkey;
+```
+
+En la pestania Action le tenemos que decir que hacer a la base de datos entre la tabla origen y la tabla destino cuando ocurra un cambio:
+
+- `NO ACTION:` No hacer nada
+- `RESTRICT:` Decirle a Postgres que no podemos permitir que la tabla cambie algo.
+- `CASCADE:` Si cambio la tabla de origen, la tabla destino tambien cambia.
+- `SET NULL` quiere decir que nuestra columna en esa fila va a dejar de tener por ejemplo el ID que tenia asociado un 77 y va a convertirse en NULL. Esto por que la tabla destino recibe un cambio y le decimos aPostgres que lo ponga en nulo.
+- `SET DEFAULT`: Si hay un cambio en la tabla origen nuestra tabla destino ponga un valor predeterminado. En un ejemplo un id podra quedar NULL.
 
 ## Inserción y consulta de datos
 
@@ -325,4 +915,4 @@ sudo -u postgres psql
 
 ## Otras buenas prácticas
 
-## Cierre del curso
+## Cierre del **curso**
