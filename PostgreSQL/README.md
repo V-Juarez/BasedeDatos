@@ -879,21 +879,510 @@ En la pestania Action le tenemos que decir que hacer a la base de datos entre la
 
 ## Inserción y consulta de datos
 
+```sql
+--/////////////////
+--16.Inserción y consulta de datos
+--////////////////
+
+
+
+SELECT * FROM public.estacion;--si data
+SELECT * FROM public.pasajero;--reto
+SELECT * FROM public.trayecto;--si data
+SELECT * FROM public.tren;--si data
+SELECT * FROM public.viaje;--reto
+
+
+
+
+--insert "estacion"
+INSERT INTO public.estacion (nombre,direccion)
+VALUES 
+    ('Estación Centro','St 1# 12'),
+    ('Estación Norte','St 100# 112')
+;
+
+--insert "tren"
+INSERT INTO public.tren (capacidad,modelo)
+VALUES 
+    (100,'Modelo 1'),
+    (100,'Modelo 2')
+;
+
+--insert "trayecto"
+INSERT INTO public.trayecto (tren,estacion,nombre)
+VALUES
+    (1,1,'Ruta 1');
+    (2,2,'Ruta 2');
+;
+
+-- RETO
+INSERT INTO public.pasajero (nombre,fecha_nacimiento,direccion_residencia)
+VALUES
+    ('José Ordoñez','1987-1-3','St 100# 12'),
+    ('Ángel Quintero','1987-1-12','St 101# 12'),
+    ('Rafel Castillo','1977-1-12','St 102# 12'),
+;
+INSERT INTO public.viaje (id_pasajero,id_trayecto,inicio,fin)
+ VALUES
+    (1,1,'2019-01-02','2019-01-02'),
+    (2,1,'2019-01-03','2019-01-03'),
+    (2,2,'2019-01-04','2019-01-04'),
+    (3,2,'2019-01-04','2019-01-04')
+
+;
+-- Delete sin limit
+DELETE FROM public.estacion WHERE estacion.id  =4;
+--delete limit
+DELETE FROM public.estacion WHERE estacion.id IN
+     (
+		SELECT id FROM public.estacion 
+	  		WHERE estacion.id IN(3,4)
+			ORDER BY  estacion.id  
+		 	LIMIT 2
+	 )
+;
+
+-- update sin limit
+UPDATE public.estacion
+SET id=4, nombre='Estación SUR-OESTE', direccion='St 4# 1'
+WHERE estacion.id = 4;
+
+-- update utilizando limit
+UPDATE public.estacion
+	SET 
+		id=4, 
+		nombre='Estación SUR-OESTE', 
+		direccion='St 4# 1'
+	WHERE id IN (
+		SELECT estacion.id FROM public.estacion
+			WHERE estacion.id in(4)
+			ORDER BY estacion.id
+			LIMIT 1
+	)
+;
+```
+
+Añadir algo el delete con limit es algo que vi en el curso de mysql sql y es buena práctica limitar la operación por si algo sale mal, pero en el caso de postgres me parece que es algo contra producente ya que para hacerlo con limit hay que hacerlo a través de una subquery.
+
 ## Inserción masiva de datos
+
+No conocía Mockaroo, mis días de estar pensando qué datos insertar para poder ir probando y practicando se han acabado.
+
+Quisiera mencionarles, que en la página también se puede insertar código SQL, tocando el botón “Fx” al final del campo. Por ejemplo, en el campo del id de tren, toqué “Fx” y puse lo siguiente:
+
+```sql
+code("(SELECT id FROM tren ORDER BY RANDOM() LIMIT 1)")
+```
+
+Este query lo que hace es buscar un id aleatorio de la tabla tren.
+
+Finalmente, una de las líneas que me generó la página es la siguiente:
+
+```sql
+insert into trayecto (nombre, trenid, estacionid) values ('Court', (SELECT id FROM tren ORDER BY RANDOM() LIMIT 1), (SELECT id FROM estacion ORDER BY RANDOM() LIMIT 1));
+```
+
+
+
+[![img](https://www.google.com/s2/favicons?domain=https://mockaroo.com/assets/favicon-8d320ac46812befcc8e0c5388550bd14d2105f78bb354728e63dd50d9e345ede.png)Mockaroo - Random Data Generator and API Mocking Tool | JSON / CSV / SQL / Excel](https://mockaroo.com/)
 
 # 3. Generar consultas avanzadas
 
 ## Cruzar tablas: SQL JOIN
 
+**Tipos de Join**
+
+![img](https://ingenieriadesoftware.es/wp-content/uploads/2018/07/sqljoin.jpeg)
+
+```sql
+--------------------------RESUMEN----------------------------------------
+/* Inner join: solo nos trae los datos que coinciden en ambas tablas. */
+select * from route r
+inner join train tr
+on tr.train_id = r.train_id;
+
+/* Este es un full outer join: trae todos los datos de ambas tablas. Coincidan o no. */
+select * 
+from route r
+full outer join train tr
+on tr.train_id = r.train_id;
+
+
+/*Este full outer join ahora solo nos trae los datos que no coinciden de la tabla A 
+ con la la tabla B, tambien nos trae los datos de la tabla B que no coiniden con la
+ tabla A. (es como el opuesto del inner join, porque en lugar de traernos los que 
+ coinciden en ambas tablas, nos trae solo los que no coinciden en ambas tablas.)*/
+select * 
+from route r
+full outer join train tr
+on tr.train_id = r.train_id
+where r.train_id is null
+or tr.train_id is null;
+
+
+/* left join: nos trae todos los datos de la tabla A(izquierda) y solo los datos de la
+ tabla B que coincidan en la tabla A. */
+select * from route r
+left join train tr
+on tr.train_id = r.train_id;
+
+/* left outer join: nos devuelve todos los datos de la tabla A que no coincide con la
+tabla B. */
+select * from route r
+left join train tr
+on tr.train_id = r.train_id
+where tr.train_id is null;
+
+/*right join: nos devuelve todos los datos de la tabla B, y solo los datos de la tabla
+A que coincidan con la tabla B*/
+select * from route r
+right join train tr
+on tr.train_id = r.train_id;
+
+/* right outer join: nos trae todos los datos de la tabla B que no coinciden con
+la tabla A*/
+
+select * from route r
+right join train tr
+on tr.train_id = r.train_id
+where r.train_id is null;
+
+/*NOTA: Cuando usamos left join (Tabla A a la tabla B) estamos usando la tabla A, es
+decir traemos todos los datos de la tabla A y solo los datos de la tabla B que coinciden
+con la tabla A. si queremos usar un left outer join la llave primaria null que debemos
+especificar es la de la tabla B.
+WHERE b.pkey us null;
+lo mismo pasa cuando usamos un right outer join
+como usamos la tabla B y solo los que coinciden con la tabla A entonces la llave null
+que usamos es de la tabla A.
+WHERE a.pkey us null;								*/
+```
+
+[![img](https://www.google.com/s2/favicons?domain=http://www.postgresqltutorial.com/postgresql-joins/)PostgreSQL Joins](http://www.postgresqltutorial.com/postgresql-joins/)
+
+[![img](https://www.google.com/s2/favicons?domain=https://static.platzi.com/media/favicons/platzi_favicon.png)http://www.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Joins.png](http://www.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Joins.png)
+
 ## Funciones Especiales Principales
+
+La función RETURNING es fundamental en la creación y uso de Stored procedure transaccionales. Al momento de insertar información con id autoincremental, con RETURNING podemos obtener dicho valor e insertarlo o referenciarlo en otras tablas.
+
+cuando haya un conflicto de id con el INSERT, podemos actualizar la tupla correspondiente con los nuevos valores usando la palabra EXCLUDED, de la siguiente manera:
+
+```sql
+INSERT INTO tren
+VALUES(1, 'Modelo modificado', 1000)
+ON CONFLICT(id) 
+DO UPDATE SET modelo = EXCLUDED.modelo, capacidad = EXCLUDED.capacidad;
+```
+
+Porque el profesor escribió a mano los nuevos valores de actualización en el SET, y eso no tiene ningún sentido en el caso de que esta actualización de tuplas a partir del conflicto de id sea ya un proceso automatizado.
+
+Funciones especiales
+
+- ON CONFLICT DO
+- RETURNING
+- LIKE / ILIKE
+- IS / IS NOT
+
+```sql
+-- Insercion de un dato que ya existe, no pasa nada
+INSERT INTO public.estacion(id, nombre, direccion)
+VALUES (1, 'Nombre', 'Dire')
+ON CONFLICT DO NOTHING;
+
+-- Insercion de un dato que ya existe, te cambia los campos de nombre y direccion
+INSERT INTO public.estacion(id, nombre, direccion)
+VALUES (1, 'Nombre', 'Dire')
+ON CONFLICT (id) DO UPDATE SET nombre = 'Nombre', direccion = 'Dire';
+
+-- Insertara una tupla y mostrara la tupla
+INSERT INTO public.estacion(nombre, direccion)
+VALUES ('RETU', 'RETDIRE')
+RETURNING *;
+
+-- %: Uno o cualquier valor
+-- _: Un valor
+SELECT nombre FROM public.pasajero
+WHERE nombre LIKE 'o%';
+-- buscamos sin importar mayusculas o minusculas
+SELECT nombre FROM public.pasajero
+WHERE nombre ILIKE 'o%';
+
+-- si una estacion o tren tiene un valor nulo
+SELECT * FROM public.tren
+WHERE modelo IS NULL;
+```
 
 ## Funciones Especiales Avanzadas
 
+Funciones Especiales avanzadas en PosgreSQL
+• COALES: compara dos valores y retorna el que es nulo
+• NULLIF: Retorna null si son iguales
+• GREATEST: Compara un arreglo y retorna el mayor
+• LEAST: Compara un arreglo de valores y retorna el menor
+• BLOQUES ANONIMOS: Ingresa condicionales dentro de una consulta de BD
+
+```sql
+SELECT id, nombre, fecha_nacimiento,
+	CASE
+	WHEN nombre ILIKE 'a%' THEN 'Comienza con A' 
+	WHEN nombre ILIKE 'e%' THEN 'Comienza con E'
+	WHEN nombre ILIKE 'i%' THEN 'Comienza con I'
+	WHEN ( current_date - fecha_nacimiento) > 6570 Then 'Es mayor de 18 años'
+	ELSE 'Su nombre no inicia con A, E o I y ademas es un niño'
+	END
+FROM pasajero ORDER BY fecha_nacimiento;
+```
+
+`Code sql`
+
+```sql
+SELECT * FROM pasajero WHERE id = 5;
+UPDATE pasajero SET nombre = NULL WHERE id = 5
+SELECT COALESCE(nombre, 'Nombre en Null') AS nombrenull , * FROM pasajero WHERE id = 5;
+SELECT NULLIF(0,0);
+SELECT NULLIF(0,1);
+SELECT GREATEST(5,5,8,95,75,4225,8,6,9,212,6);
+SELECT LEAST(5,5,8,95,75,4225,8,6,9,212,6);
+-- Reto
+SELECT COALESCE(nombre, 'Nombre en Null') AS nombrenull , *,
+CASE WHEN fecha_nacimiento > '2015-01-01' THEN
+'Niño' ELSE 'Mayor' END,
+CASE WHEN nombre ILIKE 'D%' THEN
+'Empieza con D' ELSE 'No empieza con D' END, 
+Case WHEN extract(years from age(current_timestamp,fecha_nacimiento::timestamp)) >= 18 THEN
+'Mayor de edad.' ELSE 'Menor de edad.' END
+FROM pasajero;
+```
+
 ## Vistas
+
+Centraliza muchos esfuerzos en una sola función.
+
+Vista volátil: Siempre que se haga la consulta en la vista, la BD hace la ejecución de la consulta en la BD, por lo que siempre se va a tener información reciente.
+
+Vista materializada: Hace la consulta una sola vez, y la información queda almacenada en memoria, la siguiente vez que se consulte, trae el dato almacenado, eso es bueno y malo a la vez, bueno porque la velocidad con la que se entrega la información es rápida, malo porque la información no es actualizada. Es ideal utilizar este tipo de vista en procesos que utilice días anteriores, porque el día de ayer, ya pasó y no hay razón para actualizarlo.
+
+Para crear una vista volátil en postgres, damos click derecho a views, create, view, le damos un nombre, y en la pestaña code escribimos o pegamos el código de la consulta que queremos guardar, la guardamos y para usar la vista usamos:
+
+```sql
+    SELECT * FROM <nombre_vista>; y listo.
+```
+
+Para crear una vista materializada, primero creamos la consulta, y definimos si los datos nos interesan o no, luego, vamos a la opción materialized views, click derecho, create, materialized view. Se abre la ventana, le damos un nombre, termina con _mview, y en la pestaña Definition escribimos la consulta que necesitamos guardar. Guardamos.
+Al probarla en este momento nos lanza un error, ¿por qué? porque no tiene datos almacenados. Para almacenar datos usamos:
+
+```sql
+    REFRESH MATERIALIZED VIEW <nombre vista>;
+```
+
+Y ahora si podemos consultarla:
+
+```sql
+    SELECT * FROM <nombre_vista_mview>;
+```
+
+> Tipos de vistas:
+> **- Vista Volátil:** Consulta con data actualizada
+> **- Vista Materializada:** Consulta con data persistente
+
+Vistas
+
+- Vista Volatil
+- Vista Materializada: persistente (Ayer)
+
+```sql
+-- Creamos la vista
+CREATE OR REPLACE VIEW public.rango_view
+AS
+    SELECT *,
+        CASE
+        WHEN fecha_nacimiento > '2015-01-01' THEN
+            'Mayor'
+        ELSE
+            'Menor'
+        END AS tipo
+    FROM pasajero ORDER BY tipo;
+ALTER TABLE public.rango_view OWNER TO postgres;
+
+-- mostramos la vista
+SELECT * FROM public.rango_view;
+
+-- Vistas Materializada, no se cambia a menos que queramos que se cambie
+SELECT * FROM viaje WHERE inicio > '22:00:00';
+
+CREATE MATERIALIZED VIEW public.despues_noche_mview
+AS
+    SELECT * FROM viaje WHERE inicio > '22:00:00';
+WITH NO DATA;
+ALTER TABLE public.despues_noche_mview OWNER TO postgres;
+
+-- observamos la vista
+SELECT * FROM despues_noche_mview;
+
+-- Damos refresh
+REFRESH MATERIALIZED VIEW despues_noche_mview;
+
+-- Borramos una tupla de viaje cuando el id = 2, para observar que no se borro
+DELETE FROM viaje WHERE id = 2;
+```
 
 ## PL/SQL
 
+Las funciones y los Stored procedure son un pilar dentro de las bases de datos con ayuda de los lenguajes procedurales como PLPGSQL y PL/SQL (En el caso de Oracle). Gran parte de la lógica de negocios puede ser abstraída directamente en la base de datos con ayuda de dicho lenguaje permitiendo liberar al backend de parte de este procesamiento.
+
+![Captura4.PNG](https://static.platzi.com/media/user_upload/Captura4-96ab9d65-0f83-48c7-b035-b515011ac551.jpg)
+
+- PL Procedural language, también conocido como procedimientos almacenados, estas nos ayuda a desarrollar código directamente en el motor de bases de datos.
+- Estructura de un Pl es: Declaración + uso de variable+ código +fin + retorno de valores o no retorna valores.UN bloque de código se ejecuta con la palabra DO $$ BEGIN --insert código here END $$
+- RAISE NOTICE ‘message’, esta sentencia es para enviar un mensaje en el log de postgres
+- Retornar una tabla
+  [Retornar una tabla](https://stackoverflow.com/questions/18084936/pl-pgsql-functions-how-to-return-a-normal-table-with-multiple-columns-using-an).
+
+DO$$ -Declaración de un bloque de código SQL
+Estructura
+
+```sql
+DO $BODY$ 
+    BEGIN 
+        --insert código here 
+    END 
+$BODY$
+```
+
+Ejemplo de declaración de bloques de código con plpgsql
+
+```sql
+DO $$ 
+    DECLARE
+        rec record;
+        contador integer :=0;
+    BEGIN 
+        --recorre  tabla pasajero y lo guarda en la variable rec
+        FOR rec IN SELECT * FROM pasajero LOOP 
+            RAISE NOTICE 'id: %     ,Nombre: %      ',
+                        rec.id,rec.nombre;
+            contador := contador + 1;
+        END LOOP;
+        RAISE NOTICE 'cantidad de registros:    %', contador;
+    END 
+$$
+```
+
+CREATE FUNTION - Declaración de una función SQL
+
+```sql
+CREATE FUNCTION  consulta_usuarios() 
+    RETURNS void
+    LANGUAGE 'plpgsql';
+AS $BODY$ 
+    DECLARE
+        rec record;
+        contador integer :=0;
+    BEGIN 
+        --recorre  tabla pasajero y lo guarda en la variable rec
+        FOR rec IN SELECT * FROM pasajero LOOP 
+            RAISE NOTICE 'id: %     ,Nombre: %      ',
+                        rec.id,rec.nombre;
+            contador := contador + 1;
+        END LOOP;
+        RAISE NOTICE 'cantidad de registros:    %', contador;
+    END 
+$BODY$
+```
+
+OTRO Ejemplo:
+Retornar una tabla con plpgsql ¡¡¡¡importante!!! es importante cual select uses para llamar la función. la función funciona de la siguiente manera en el parámetro sí se introduce NULL retorna toda la lista, si se introduce id retornará esa tupla
+
+```sql
+--FUNCION QUE RETORNA UNA TABLA
+--Mostrar tabla con plpgsql
+--https://stackoverflow.com/questions/18084936/pl-pgsql-functions-how-to-return-a-normal-table-with-multiple-columns-using-an
+DROP FUNCTION consulta_t_pasajero(p_pasajero_id integer);
+
+CREATE OR REPLACE FUNCTION consulta_t_pasajero(p_pasajero_id integer) 
+RETURNS TABLE(id integer, nombre character varying, direccion_residencia character varying, fecha_nacimiento date) 
+LANGUAGE plpgsql
+AS $BODY$
+    BEGIN
+		IF p_pasajero_id IS NULL THEN 
+		 RETURN QUERY 
+			SELECT pasajero.id, pasajero.nombre, pasajero.direccion_residencia, pasajero.fecha_nacimiento
+			FROM public.pasajero;
+		END IF;
+		RETURN QUERY 
+			SELECT pasajero.id, pasajero.nombre, pasajero.direccion_residencia, pasajero.fecha_nacimiento
+			FROM public.pasajero
+			WHERE pasajero.id = p_pasajero_id;
+    END;
+$BODY$
+
+--Retorno en forma de fila
+SELECT consulta_t_pasajero(NULL); 
+SELECT consulta_t_pasajero(50);
+--Retorno en forma de tabla
+SELECT * FROM consulta_t_pasajero(NULL);
+SELECT * FROM consulta_t_pasajero(50);
+```
+
+[![img](https://www.google.com/s2/favicons?domain=https://www.postgresql.org/docs/9.2/plpgsql.html/favicon.ico)PostgreSQL: Documentation: 9.2: PL/pgSQL - SQL Procedural Language](https://www.postgresql.org/docs/9.2/plpgsql.html)
+
 ## Triggers
+
+Para la creación de triggers se debe hacer los siguiente
+Crear la función que activará el evento. Para ello se debe tomar los siguientes aspectos:
+
+1. En la declaración de la función, en la sección del retorno se debe indicar que es tipo triggers es decir RETURNS TRIGGER.
+   Luego indicar en que lenguaje está escrito es decir LANGUAE ‘plpgsql’
+2. La función tipo triggers debe retornar los valores OLD acepta lo viejo o NEW acepta lo nuevo. Sí se retorna VOID en nuestra función de tipo triggers no aceptamos cambios es decir RETURN NEW;
+3. Tanto NEW como OLD son un objeto de tipo record y contiene dentro de si el registro, es decir se puede acceder a los campos NEW.campo_nombre del registro
+
+```sql
+DROP FUNCTION IF EXISTS  count_on_insert_pasajero() CASCADE;
+
+CREATE OR REPLACE FUNCTION count_on_insert_pasajero()
+	RETURNS TRIGGER
+	LANGUAGE 'plpgsql'
+AS $BODY$
+	DECLARE 
+		contador integer:=0;
+		rec record;
+	BEGIN
+		
+		FOR rec IN SELECT * FROM pasajero LOOP 
+			contador := contador + 1;
+		END LOOP;
+		RAISE NOTICE 'cantidad de registros:	%', contador;
+		
+		--insert record on conteo_pasajero
+		INSERT INTO public.conteo_pasajero (total_pasajero,hora_conteo)
+		VALUES (contador,now());
+		
+		RETURN NEW;
+		
+	END;	
+$BODY$
+```
+
+Lo siguiente será crear la regla que estará a la escucha del evento para disparar el triggers, para ello se deberá tomar los siguientes aspectos.
+
+1. CREATE TRIGGER name_trigger name_event ON name_table FOR EACH ROW EXECUTE PROCEDURE name_procedure;
+2. En la primera sección cuando declaramos el trigger debemos indicar en que momento en que se debe disparar el trigger:
+   CREATE TRIGGER name_trigger name_event ON name_table en el name_event allí puede ir alguno de estos tres parámetros para llamar la ejecución del trigger, estos son:
+
+- BEFORE = antes,
+- AFTER=luego,
+- INSTEAD OF = hacer esto, en vez de lo que iba a hacer el motor de bases de datos.
+
+1. FOR EACH ROW EXECUTE PROCEDURE name_procedure indica que es para registro o fila de nuestra tabla
+
+```sql
+-- CREACIÓN DE LA REGLA PARA EJECUTAR EL TRIGGER
+CREATE TRIGGER trigger_on_insert_to_pasajero
+AFTER INSERT ON pasajero 
+FOR EACH ROW EXECUTE PROCEDURE count_on_insert_pasajero(); 
+```
 
 # 4. Integrar bases de datos con servicios externos
 
@@ -915,4 +1404,5 @@ En la pestania Action le tenemos que decir que hacer a la base de datos entre la
 
 ## Otras buenas prácticas
 
-## Cierre del **curso**
+## Cierre del curso
+
