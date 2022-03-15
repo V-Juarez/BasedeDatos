@@ -1388,21 +1388,337 @@ FOR EACH ROW EXECUTE PROCEDURE count_on_insert_pasajero();
 
 ## Simulando una conexión a Bases de Datos remotas
 
+**datos basicos para usar dblink**
+
+Este debe estar activado en postgres, si no lo esta debe hacerse con
+
+```sql
+CREATE EXTENSION dblink;
+```
+
+Una simple consulta en la tabla remota
+
+```sql
+select * from
+dblink ('dbname=RemoteDB
+		port=5432 <-- puerto remoto
+		host=X.x.x.x <-- IP remota
+		user= postgres <-- usuario
+		password= postgres', <-- password, aguas, debe estar encapsulado
+	   'SELECT id FROM usuarios_vip') <-- la consulta
+	   AS datos_remotos (id integer); <-- los datos deben ser expresados como otra tabla y de que tipo son
+```
+
+Reto haciendolo al revés
+
+```sql
+SELECT * FROM vip
+JOIN
+dblink('dbname=transporte
+	   port=5432
+	   host=127.0.0.1
+	   user=usuario_consulta
+	   password=jose123',
+	   'SELECT id,nombre,direccion_residencia,fecha_nacimiento FROM pasajero')
+	   
+	   AS datos_remotos (id integer,nombre character varying,direccion_residencia character varying,fecha_nacimiento date)
+USING (id)	 
+```
+
+[![img](https://www.google.com/s2/favicons?domain=https://mockaroo.com/assets/favicon-8d320ac46812befcc8e0c5388550bd14d2105f78bb354728e63dd50d9e345ede.png)Mockaroo - Random Data Generator and API Mocking Tool | JSON / CSV / SQL / Excel](https://mockaroo.com/)
+
 ## Transacciones
 
+Las transacciones, tienen la capacidad para empaquetar varios pasos en una sola operación “todo o nada”.y si ocurre alguna falla que impida que se complete la transacción, entonces ninguno de los pasos se ejecuta y no se afecta la base de datos en absoluto.
+SQL Transacción - Estructura
+La transacciones tienen la siguiente estructura postgres. Postgres en las operaciones normales usa  de manera implícita el rollback el rollback.
+
+```sql
+BEGIN;
+<Intrucciones>
+COMMIT|ROLLBACK
+
+SQL Transacción - Ejemplo en PgAdmin
+
+
+Desactivamos en la equina superior de pg-admin el auto commit
+
+
+Iniciamos la transacción
+
+
+BEGIN;
+INSERT INTO  public.estacion(nombre,direccion)
+VALUES('Estación Transacción',' 1');
+
+INSERT INTO  public.tren(modelo,capacidad)
+VALUES('Modelo Transacción','2');
+
+COMMIT;
+
+SQL Transacción - Ejemplo de un rollback implícito
+Como se puede visualizar en el ejemplo existe una inserción correcta en la tabla tren pero en la tabla estación sé está haciendo un insert a un id que existe realmente.
+BEGIN;
+
+
+INSERT INTO  public.tren(modelo,capacidad)
+VALUES('Modelo Transacción 2','2');
+
+INSERT INTO  public.estacion(id,nombre,direccion)
+VALUES(101,'Estación Transacción 2',' 1');
+
+COMMIT;
+```
+
+> Las transacciones, tienen la capacidad para empaquetar varios pasos en una sola operación “todo o nada”.y si ocurre alguna falla que impida que se complete la transacción, entonces ninguno de los pasos se ejecuta y no se afecta la base de datos en absoluto.
+
+> Entonces una transacción sirve para agrupar varias consultas juntas y garantizar que cada una de ellas se ejecute de manera exitosa, en caso de que alguna falle, todas las operaciones del bloque que comienza con BEGIN se ven descartadas,
+
+codigo para solo permitir 3  personas que sean vip. Lo que intente fue que a la hora de ejecutar cuantas personas vip habian si era mayor a 3 trataba de hacer caer en error. Este fue mi resultado.
+
+```sql
+BEGIN;
+
+INSERT INTO vip (id,fecha)
+VALUES (50,NOW());
+
+DO $$
+DECLARE 
+	rec record;
+	x integer := 0;
+BEGIN 
+	FOR rec IN
+		SELECT *
+		FROM vip
+	LOOP
+		x:= x+1;
+	END LOOP;
+	
+
+IF 
+	x>3 THEN x=0;
+	ROLLBACK;
+END IF;
+
+END 
+$$;
+
+COMMIT;
+
+## 
+```
+
 ## Otras Extensiones para Postgres
+
+> Una extensión que me pareció muy interesante es passwordcheck la cual verifica el nivel de fortaleza de un [passwordcheck](https://www.postgresql.org/docs/11/passwordcheck.html) cuando un usuario/rol es creado en la base de datos. Esto, brinda una capa de seguridad adicional protegiéndonos de ataques de fuerza bruta ya que garantiza que tenemos una contraseña segura.
+>
+> Para el tema de seguridad, agregaría el uso de la extensión pgcrypto, que permite implementar funciones de criptografía al PostgreSQL.
+
+Listar todas las extensiones disponibles en postgres y visualizar una pequeña descripción de su funcionamiento con este comando.
+
+```sql
+SELECT * FROM pg_available_extensions;
+```
+
+Compara palabras
+
+```sql
+CREATE EXTENSION fuzzystrmatch;
+SELECT levenshtein('oswaldo', 'osvaldo')
+SELECT difference('oswaldo', 'osvaldo');
+SELECT difference('beard', 'bird');
+```
+
+>  Frecuencia la extensión PostGIS que habilita **análisis espacial **y manejo de geometrías, todo lo necesario para un Sistema de información geográfica.
+
+[![img](https://www.google.com/s2/favicons?domain=https://www.postgresql.org/docs/11/contrib.html/favicon.ico)PostgreSQL: Documentation: 11: Appendix F. Additional Supplied Modules](https://www.postgresql.org/docs/11/contrib.html)
+
+[**Entendiendo SQL en Posgresql**](https://www.postgresql.org/docs/12/extend.html)
 
 # 5. Implementar mejores prácticas
 
 ## Backups y Restauración
 
+Crear un fichero con las sentencias SQL listas para cargar el contenido de
+una db en otra db distinta (modo simple)
+
+```sql
+postgres=# pg_dump source_db_name > db_data.sql
+```
+
+Cargar un fichero con las sentencias SQL listas de una db en otra db
+nueva y distinta (modo simple)
+
+```sql
+postgres=# psql -d new_db_name -f db_data.sql
+```
+
+Otras opciones disponibles:
+
+```sql
+postgres=#\q
+...$ psql --help
+```
+
+> Formatos del backup:
+>
+> - Custom -> Un formato propio de Postgres
+> - Tar -> Un archivo comprimido que contiene la estructura de la BD
+> - Plain -> SQL plano
+> - Directory -> Estructura sin comprimir
+
 ## Mantenimiento
+
+**Vacuum**: La más importante, con tres opciones, Vacuum, Freeze y Analyze.
+
+**Full**: la tabla quedará limpia en su totalidad
+
+**Freeze**: durante el proceso la tabla se congela y no permite modificaciones hasta que no termina la limpieza
+
+**Analyze**: solo revisa la tabla
+
+**Analyze**: No hace cambios en la tabla. Solo hace una revisión y la muestra.
+
+**Reindex**: Aplica para tablas con numerosos registros con indices, como por ejemplo las llaves primarias.
+
+**Cluster**: Especificamos al motor de base de datos que reorganice la información en el disco.
+
+> No se recomienda hacer esto de forma manual, es mucho mejor hacerlo con la interfaz gráfica porque Postgres lo lleva optimizando desde hace años.
+
+[![img](https://www.google.com/s2/favicons?domain=//static.platzi.com/media/favicons/platzi_favicon.png)El apagón de Platzi / Migramos de MySQL a PostgreSQL](https://platzi.com/blog/el-apagon-de-platzi-migramos-de-mysql-a-postgresql/)
+
+[Checkee la pagina de mantenimiento de postgres](https://www.postgresql.org/docs/9.0/maintenance.html)
 
 ## Introducción a Réplicas
 
+> Todo para mejorar el rendimeinto de nuestros aplicativos y mejorar la experiencia de nuestro cliente final.
+
+Cuando la aplicación crece a nivel exponencial,nos vamos a encontrar con límites físicos en el servidor que está nuestra aplicación. También sucede que, Sí ocurren muchas lecturas y escritura en una tabla esta puede ser bloqueda por postgres. Aquí es donde las entra las replicas
+
+Son mecanismos que nos evitan tener problemas de entrada y salida en los sistemas operativos.
+
+>  Existen dos tipos de personas, los que ya usan réplicas y los que las van a usar…
+
+Piensa siempre en modo Réplica.
+La estrategia consiste tener tener una BD principal donde se hacen las modificaciones y una BD secundaria donde solo se hacen las lecturas.
+
 ## Implementación de Réplicas en Postgres
+
+Cloudjiffy ha cambiado y no permite tener IPv4 en Free, pero sigue siendo posible ejecutar el ejercicio así:
+Después de recibir en el correo los accesos:
+
+![Untitled.png](https://static.platzi.com/media/user_upload/Untitled-574ba8d3-d2c2-4507-a38b-5c8183714a29.jpg)
+
+En lugar de usar una IP pública, nuestro host será node39168-xxx-cloudjiffy.net; sin embargo no podremos usar el puerto 5432, Debemos crear un endpoint para permitir el acceso a la BD. para ello vamos a las opciones de nuestro environment.
+
+![2.png](https://static.platzi.com/media/user_upload/2-6f6e7a15-f804-4518-b628-1fbca4937ba3.jpg)
+
+Hacemos clic en el icono Amarillo con forma de engranaje/llave, seleccionar Endpoint y hacer clic en Add, llenar los datos así, en Node se debe seleccionar el NODO que contiene a la base de datos, en Name puede ser cualquier valor, pero el puerto que queremos alcanzar es 5432, así que al hacer clic en ADD el Endpoint asignará un puerto publico para poder acceder al puerto interno.:
+
+![Annotation 2020-05-11 055139.png](https://static.platzi.com/media/user_upload/Annotation%202020-05-11%20055139-33da4639-09a3-45dd-860d-1e827942c6ed.jpg)
+
+Despues de hacer clic en ADD nos asigna el Puerto que Podemos usar para accede a la BD usando el host en forma de nombre de dominio y no IP, en éste caso fué 11052:
+
+![Annotation 2020-05-11 055040.png](https://static.platzi.com/media/user_upload/Annotation%202020-05-11%20055040-808cccd0-d57a-4dbb-95c9-6b94b37e9d39.jpg)
+
+Ahora se puede continuar el ejercicio escribiendo el host [ode39168-xxx-cloudjiffy.net:11052](http://node39168-xxx-cloudjiffy.net:11052/)  en lugar de la IP publica. Aplica tanto para master cómo réplica.
+
+de Implementación de Réplicas en Postgres con Docker, en vista de que muchos han tenido problemas con [Cloudjiffy al no permitir IPv4 en Free.](https://platzi.com/tutoriales/1480-postgresql/6559-implementacion-de-replicas-en-postgres-con-docker-2/)
+
+Las replicas consisten en tener multiples servidores de Postgresql con un minimo de un Master y una Replica
+
+para lograrlo se deben realizar hacer cambios en las configuraciones de la base de datos Master en postgresql.conf
+
+```sh
+# los archivos de bitacora se comporten como hot standby
+# es decir mantiene los archivos hasta que las replicas los utilizen
+wal_level = hot_standby
+
+# Este valor corresponde a la cantidad de replicas que vamos a tener
+max_wal_senders = 1
+
+# Como trataremos los archivos de bitacora, los archivaremos para que los puedan leer lar replicas
+archive_mode = on
+
+# Se especifica un comando de linux para copiar los archivos
+archive_command = 'cp %p /tmp/%f'
+```
+
+tambien en el archivo pg_hba.conf en la base de datos Master
+se debe agregar la ip de la base de datos para replicacion
+
+```sh
+local   all         all                               md5
+host    all         all         127.0.0.1/32          ident
+host    all         all         ::1/128               ident
+host    all         all         0.0.0.0/0             md5
+host    replication all         xxxxxxxxxx/32         trust
+```
+
+Ahora para la base de datos de **Replica** nos conectamos por SSH
+
+Detenemos el servicio
+
+```sh
+sudo service postgresql stop
+```
+
+Borramos los datos locales
+
+```sh
+rm -rf /var/lib/pgsql/data/*
+```
+
+Traemos todos los datos de master y los traemos a replica
+
+```sh
+pg_basebackup -U $user_de_master -R -D /var/lib/pgsql/data/ --host=$host_de_master_db --port=$puerto_de_la_master_db
+```
+
+Modificamos el archivo **postgresql.conf** de **replica**
+
+```sh
+# esto define este postgres como una base de datos de replica
+hot_standby = on
+```
+
+Ahora que los cambios estan hechos reiniciamos el servicio
+
+```sh
+sudo service postgresql start
+```
+
+A partir de ahora las configuraciones se han guardado y ya funcionan en modo de master y replica
+incluso la contraseña del servicio replica ahora sera la misma del servicio master
+a partir de ahora todos los cambios hechos en master se recrean en replica, y cualquier cambio hecho en replica no se ejecutara ya que estara en modo de solo lectura.
+
+[![img](https://www.google.com/s2/favicons?domain=https://jelastic.com/wp-content/themes/salient/img/favicon/favicon-32x32.png)Multi-Cloud PaaS with Java, PHP, Node.js, Docker & Kubernetes Hosting | Jelastic](https://jelastic.com/)
+
+[![img](https://www.google.com/s2/favicons?domain=https://app.cloudjiffy.co//res/images/brand/jel/favicon-16x16.ico)Cloudjiffy](https://app.cloudjiffy.co/)
 
 ## Otras buenas prácticas
 
+```sql
+truco sería algo así, buena información.
+
+BEGIN;
+ALTER TABLE pasajeros RENAME TO pasajeros_old;
+CREATE TABLE pasajeros( nombre character varying, id integer, direccion_residencia character varying, fecha_nacimiento date,
+primary key (id));
+COMMIT;
+
+BEGIN;
+ALTER TABLE pasajeros RENAME TO pasajeros_temp;
+ALTER TABLE pasajeros_old RENAME TO pasajeros;
+ALTER TABLE pasajeros_temp RENAME TO pasajeros_old;
+COMMIT;
+```
+
+[cambiar-nombres-de-tablas-y-particiones.pdf](https://static.platzi.com/media/public/uploads/cambiar-nombres-de-tablas-y-particiones_32ca477a-a619-491e-a42d-aaa94dec5abd.pdf)
+
 ## Cierre del curso
+
+Nunca pares de Aprender!
+
+
 
