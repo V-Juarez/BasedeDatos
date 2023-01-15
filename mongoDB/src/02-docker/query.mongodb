@@ -1,0 +1,3 @@
+user("platzi_store")
+
+db.products.find()
