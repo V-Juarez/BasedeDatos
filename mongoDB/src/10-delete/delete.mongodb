@@ -1,0 +1,12 @@
+use("platzi_store")
+
+// Trabajar con id generado por mongodb
+// db.products.deleteOne({ _id: ObjectId("1212") })
+// db.products.deleteOne({ _id: 1 })
+
+// Many
+// db.products.deleteMany({ price: 100 })
+
+// Eliminar la colecion
+db.products.drop()
+
