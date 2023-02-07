@@ -21,4 +21,16 @@ Modificadores del operador ***push\***
 > **$position**
 > Especifica la ubicación en la matriz en la que insertar los nuevos elementos. Requiere el uso del modificador $each. Sin el modificador $position, el $push agrega los elementos al final de la matriz
 
+
+
+> Con los siguientes operadores podremos modificar los documentos que dentro contengan un array:
+>
+> - $push: Agrega un elemento en el array.
+> - $pull: Remueve todos los elementos del array que hagan match con un query especifico.
+> - $in: Hace match con algunos de los valores especificados en un arreglo.
+
 Mas sobre [**Array Update operators**](https://www.mongodb.com/docs/manual/reference/operator/update-array/)
+
+## update or insert
+
+**upsert**: Esta condición permite agregar un elemento en un array dentro de un documento. Lo que lo hace especial es que si el documento no existe, este operador lo crea, y si ya existe, inserta los nuevo elementos del array sobre el documento existente.
