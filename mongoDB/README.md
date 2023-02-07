@@ -39,6 +39,16 @@ Mas sobre [**Array Update operators**](https://www.mongodb.com/docs/manual/refer
 
 # Query Operations
 
+## Usando $eq y $ne
+
 > $eq (equal)
 > $ne (not equal)
 
+## Usando $gt, $gte, $lt, $lte
+
+> Operadores:
+>
+> - $gt (greater than - >)
+> - $gte (greater than or equal - >=)
+> - $lt (less than - <)
+> - $lte (less than or equal - <=)
