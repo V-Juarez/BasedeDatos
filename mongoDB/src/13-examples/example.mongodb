@@ -1,0 +1,17 @@
+use("platzi_store")
+
+db.iot.updateMany(
+  // query
+  { sensor: "A001" },
+  // update
+  {
+    // quitar datos de un array
+    $pull: {
+      readings: { $gte: 3 }
+    }
+  }
+)
+
+
+// Sample_trining.trips  --- mongoAlas
+// { tripduration: { $lte: 200 }, }
