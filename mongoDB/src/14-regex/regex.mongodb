@@ -1,0 +1,17 @@
+use("platzi_store")
+
+// db.inventory.find({ "item.description": "Single line description." })
+// ------ regex find line --------
+// db.inventory.find({ "item.description": { $regex: /line/ } })
+
+// ---------- find it's not import is camelkeys or lowerkeys
+// db.inventory.find({ "item.description": { $regex: /LINE/i } })
+
+// ------------- find Finally element
+// db.inventory.find({ "item.description": { $regex: /line$/i } })
+
+// --------- find start element
+// db.inventory.find({ "item.description": { $regex: /^single/i } })
+
+// ------- new line | multiline
+db.inventory.find({ "item.description": { $regex: /^s/im } })
