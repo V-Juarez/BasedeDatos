@@ -1,0 +1,8 @@
+{ tripduration: { $lte: 200 },  usertype: "Subscriber" }
+{ "start station name": 1, _id: 0, "end station name": 1 }
+
+
+// start station name
+// "Washington Pl & Broadway"
+// end station name
+// "MacDougal St & Washington Sq"
