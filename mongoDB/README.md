@@ -74,3 +74,22 @@ db.routes.find({
     ]
 })
 ```
+
+## Expresive operator
+
+> `$expr` Allows use of aggregation expressions within the query language.
+
+
+```mongo
+use("sample_training")
+db.trips.find({
+    $and: [
+        {$expr: {
+            $eq: ["$start station id", "$end station id"]
+        }},
+        {tripduration: {
+            $gte: 1200
+        }}
+    ]
+}).count()
+```
