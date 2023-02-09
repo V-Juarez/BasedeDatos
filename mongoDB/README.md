@@ -52,3 +52,11 @@ Mas sobre [**Array Update operators**](https://www.mongodb.com/docs/manual/refer
 > - $gte (greater than or equal - >=)
 > - $lt (less than - <)
 > - $lte (less than or equal - <=)
+
+## Operadores para Arrays
+
+> `$all` Matches arrays that contain all elements specified in the query.
+
+> `$elemMatch` Select documents if element in the array field matches all the specified `$elemMatch` conditions.
+
+> `$size` Selects documents if the array field is a specified size.
