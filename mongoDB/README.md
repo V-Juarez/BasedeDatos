@@ -60,3 +60,17 @@ Mas sobre [**Array Update operators**](https://www.mongodb.com/docs/manual/refer
 > `$elemMatch` Select documents if element in the array field matches all the specified `$elemMatch` conditions.
 
 > `$size` Selects documents if the array field is a specified size.
+
+## Operadores logicos
+
+Forma utilizando el $and implícito y $or explícito.
+
+```db
+db.routes.find({
+    airplane: "E70",
+    $or: [
+        { dst_airport: "BOG" },
+        { src_airport: "BOG" }
+    ]
+})
+```
