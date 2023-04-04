@@ -1,10 +1,10 @@
 use("platzi_store")
 
 db.products.insertOne({
-  last_name: 'Gomez',
-  email: 'nico@gmail.com',
-  password: '________',
-  role: "admin",
-  age: 18,
-  isSingle: true
+  name: 'Camiseta',
+  sizes: ['L'],
+  category: {
+    name: "Category",
+    image: "url"
+  }
 })
