@@ -1,0 +1,21 @@
+use("platzi_store")
+
+db.users.insertOne({
+  email: "nico@gmail.com",
+  password: "ASFs3421sadFs234",
+  role: "admin",
+  social_accounts: [
+    "twitter",
+    "facebook"
+  ],
+  address: {
+    street: "cr 981",
+    city: "Bogota",
+    zip: "11011"
+  },
+  shipping_addres: {
+    street: "cr 891",
+    city: "Bogota",
+    zip: "12011"
+  }
+})
